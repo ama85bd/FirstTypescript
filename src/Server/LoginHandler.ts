@@ -1,10 +1,9 @@
-import { error } from 'console';
 import { IncomingMessage, ServerResponse } from 'http';
-import { IAccount, IHandler, ITokenGenerator } from './Model';
+import { IAccount, ITokenGenerator } from './Model';
+import { HTTP_CODES, HTTP_METHODS } from '../Shared/Model';
+import { BaseRequestHandler } from './BaseRequestHandler';
 
-export class LoginHandler implements IHandler {
-  private req: IncomingMessage;
-  private res: ServerResponse;
+export class LoginHandler extends BaseRequestHandler {
   private tokenGenerator: ITokenGenerator;
 
   public constructor(
@@ -12,43 +11,38 @@ export class LoginHandler implements IHandler {
     res: ServerResponse,
     tokenGenerator: ITokenGenerator
   ) {
-    this.req = req;
-    this.res = res;
+    super(req, res);
     this.tokenGenerator = tokenGenerator;
   }
 
   public async handleRequest(): Promise<void> {
+    switch (this.req.method) {
+      case HTTP_METHODS.POST:
+        await this.handlePost();
+        break;
+
+      default:
+        this.handleNotFound();
+        break;
+    }
+  }
+
+  private async handlePost() {
     try {
-      const body = await this.getRequestBody();
+      const body: IAccount = await this.getRequestBody();
       const sessionToken = await this.tokenGenerator.generateToken(body);
       if (sessionToken) {
-        this.res.write('valid credentials');
+        this.res.statusCode = HTTP_CODES.CREATED;
+        this.res.writeHead(HTTP_CODES.CREATED, {
+          'Content-Type': 'application/json',
+        });
+        this.res.write(JSON.stringify(sessionToken));
       } else {
+        this.res.statusCode = HTTP_CODES.NOT_FOUND;
         this.res.write('wrong credentials');
       }
     } catch (error: any) {
       this.res.write('error: ' + error.message);
     }
-  }
-
-  private async getRequestBody(): Promise<IAccount> {
-    return new Promise((resolve, reject) => {
-      let body = '';
-      this.req.on('data', (data: string) => {
-        body += data;
-      });
-
-      this.req.on('end', () => {
-        try {
-          resolve(JSON.parse(body));
-        } catch (error) {
-          reject(error);
-        }
-      });
-
-      this.req.on('error', (error: any) => {
-        reject(error);
-      });
-    });
   }
 }

@@ -5,3 +5,20 @@ Content-Type: application/json
     "username": "user1",
     "password": "pass1"
 }
+
+####
+GET http://localhost:8080/users?id=123user1
+Authorization: cppqgftrcwo
+
+####
+PUT  http://localhost:8080/users
+Authorization: cppqgftrcwo
+Content-Type: application/json
+
+{
+    "age": 35,
+  "email": "user2@test.com",
+  "name": "user2",
+  "workingPosition": 3
+    
+}
