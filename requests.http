@@ -7,8 +7,16 @@ Content-Type: application/json
 }
 
 ####
-GET http://localhost:8080/users?id=123user1
+GET http://localhost:8080/users?id=xudxt1lh9g8
 Authorization: cppqgftrcwo
+
+####
+GET http://localhost:8080/users?name=user
+Authorization: 3pea90323ip
+
+####
+DELETE  http://localhost:8080/users?id=xudxt1lh9g8
+Authorization: vz4rw62anj
 
 ####
 PUT  http://localhost:8080/users
